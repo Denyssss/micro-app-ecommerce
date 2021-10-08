@@ -1,16 +1,34 @@
 import { Request, Response, NextFunction } from "express";
-import { validationResult } from "express-validator";
-import {RequestValidationError} from "../errors/request-validation-error";
+import jwt from "jsonwebtoken";
+import Global = WebAssembly.Global;
 
-export const requestValidator = (
+interface JWTPayload {
+    id: string;
+    user: string;
+}
+
+declare global {
+    namespace Express {
+        interface Request {
+            currentUser?: JWTPayload;
+        }
+    }
+}
+
+export const currentUser = (
     req: Request,
     res: Response,
     next: NextFunction
 ) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        throw new RequestValidationError(errors.array());
+    if (!req.session?.jwt) {
+        return next()
     }
+
+
+    try {
+        const payload = jwt.verify(req.session.jwt, process.env.JWT_KEY) as JWTPayload;
+        req.currentUser = payload;
+    } catch (err) {}
 
     next();
 };
