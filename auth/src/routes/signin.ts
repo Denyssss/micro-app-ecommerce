@@ -1,10 +1,10 @@
 import express from "express";
 import { body } from "express-validator";
-import { requestValidator } from "../middlewares/request-validator";
-import { User } from '../models/user'
-import { BadRequestError } from "../errors/BadRequestError";
+import { BadRequestError, validateRequest } from '@dsticketing/common';
 import jwt from 'jsonwebtoken';
+
 import {Password} from "../services/password";
+import { User } from '../models/user'
 
 const router = express.Router();
 
@@ -13,7 +13,7 @@ router.post('/api/users/signin',
         body('email').isEmail().withMessage('provide valid emile'),
         body('password').trim().notEmpty().withMessage('provide valid password'),
     ],
-    requestValidator,
+    validateRequest,
     async (req, res) => {
         const { email, password } = req.body;
 
